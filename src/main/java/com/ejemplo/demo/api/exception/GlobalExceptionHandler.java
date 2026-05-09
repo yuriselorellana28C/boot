@@ -1,12 +1,14 @@
- package com.ejemplo.demo.api.exception;
+package com.ejemplo.demo.api.exception;
 
 import com.ejemplo.demo.api.dto.ErrorResponse;
+import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.validation.FieldError;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -37,6 +39,30 @@ public class GlobalExceptionHandler {
         ErrorResponse body = new ErrorResponse(
                 "BUSINESS_RULE_ERROR",
                 ex.getMessage(),
+                Instant.now(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> manejarNoEncontrado(EntityNotFoundException ex) {
+        ErrorResponse body = new ErrorResponse(
+                "NOT_FOUND",
+                ex.getMessage(),
+                Instant.now(),
+                Map.of()
+        );
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> manejarIntegridad(DataIntegrityViolationException ex) {
+        ErrorResponse body = new ErrorResponse(
+                "BUSINESS_RULE_ERROR",
+                "No se pudo completar la operación por una restricción de datos",
                 Instant.now(),
                 Map.of()
         );
